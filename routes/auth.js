@@ -273,3 +273,6 @@ router.get('/me', protect, (req, res) => {
 });
 
 module.exports = router;
+module.exports._generateOTP = generateOTP;
+module.exports._generateToken = generateToken;
+module.exports._validateEmail = validateEmail;
