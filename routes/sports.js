@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const asyncHandler = require('../utils/asyncHandler');
 
 const ESPN = 'https://site.api.espn.com/apis/site/v2/sports';
 
@@ -10,7 +11,6 @@ const ENDPOINTS = {
   rugby:       `${ESPN}/rugby/scoreboard`,
 };
 
-// Normalise ESPN event → flat format the frontend already uses
 function normalise(d) {
   const leagueName = d.leagues?.[0]?.name || d.league?.name || '';
   return (d.events || []).map(e => {
@@ -42,18 +42,12 @@ function normalise(d) {
 }
 
 // GET /api/sports/:type
-router.get('/:type', async (req, res) => {
-  const type = req.params.type;
-  const url  = ENDPOINTS[type] || ENDPOINTS.livescores;
-  try {
-    const r = await fetch(url, { signal: AbortSignal.timeout(8000) });
-    if (!r.ok) return res.json({ events: [] });
-    const d  = await r.json();
-    res.json({ events: normalise(d) });
-  } catch (e) {
-    console.error('Sports error:', e.message);
-    res.json({ events: [] });
-  }
-});
+router.get('/:type', asyncHandler(async (req, res) => {
+  const url = ENDPOINTS[req.params.type] || ENDPOINTS.livescores;
+  const r = await fetch(url, { signal: AbortSignal.timeout(8000) });
+  if (!r.ok) return res.json({ events: [] });
+  const d = await r.json();
+  res.json({ events: normalise(d) });
+}));
 
 module.exports = router;

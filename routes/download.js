@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const asyncHandler = require('../utils/asyncHandler');
 
-// Public Cobalt instances that support the new v7+ API
 const INSTANCES = [
   'https://cobalt.malvage.com',
   'https://cobalt.api.timelessnesses.me',
@@ -10,8 +10,7 @@ const INSTANCES = [
 ];
 
 // POST /api/download
-// Body: { url, mode }  mode = "audio" | "auto"
-router.post('/', async (req, res) => {
+router.post('/', asyncHandler(async (req, res) => {
   const { url, mode } = req.body || {};
   if (!url) return res.status(400).json({ error: 'URL is required' });
 
@@ -34,7 +33,6 @@ router.post('/', async (req, res) => {
       const text = await r.text();
       let data;
       try { data = JSON.parse(text); } catch { continue; }
-      // Accept any non-error response
       if (data && data.status && data.status !== 'error') {
         return res.json(data);
       }
@@ -44,6 +42,6 @@ router.post('/', async (req, res) => {
   }
 
   res.status(502).json({ error: 'All download instances are currently unavailable. Try again shortly.' });
-});
+}));
 
 module.exports = router;
