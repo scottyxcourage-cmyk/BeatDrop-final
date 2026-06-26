@@ -1,5 +1,6 @@
 require('dotenv').config({ path: '/etc/secrets/.env' });
 const express = require('express');
+const helmet = require('helmet');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
@@ -29,11 +30,22 @@ const authLimiter = rateLimit({
   message: 'Too many auth attempts, try again later.'
 });
 
+const allowedOrigins = process.env.FRONTEND_URL
+  ? process.env.FRONTEND_URL.split(',').map(s => s.trim())
+  : [];
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || '*',
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
-app.use(express.json());
+app.use(helmet());
+app.use(express.json({ limit: '1mb' }));
 app.use(limiter);
 
 const frontendDir = path.join(__dirname, 'public');

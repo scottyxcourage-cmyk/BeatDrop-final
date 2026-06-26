@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
+const { protect } = require('../middleware/auth');
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
 
-// POST /api/ai/chat — proxies to OpenRouter
-router.post('/chat', async (req, res) => {
+// POST /api/ai/chat — proxies to OpenRouter (auth required)
+router.post('/chat', protect, async (req, res) => {
   const { messages } = req.body;
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ message: 'messages array is required' });

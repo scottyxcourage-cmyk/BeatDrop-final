@@ -10,7 +10,7 @@ const { protect } = require('../middleware/auth');
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-const ADMIN_EMAIL = 'maposacourage41@gmail.com';
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || '').toLowerCase();
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 const generateToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '7d' });
@@ -142,7 +142,7 @@ router.post('/register', async (req, res) => {
     });
   } catch (err) {
     console.error('Register error:', err.message);
-    res.status(500).json({ message: err.message || 'Server error' });
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
