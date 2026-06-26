@@ -975,7 +975,7 @@ downloader(){
     </div>
     <div class="card" style="padding:16px;background:rgba(255,165,0,.04);border-color:rgba(255,165,0,.2)">
       <div style="font-size:13px;color:#ffa500;font-weight:700;margin-bottom:4px">⚠ About the Downloader</div>
-      <p style="color:#6688aa;font-size:12px;line-height:1.6">We use Cobalt — the best open-source downloader. If a link fails, the video may be private, geo-restricted, or the service may be temporarily down. Try again or use a different link.</p>
+      <p style="color:#6688aa;font-size:12px;line-height:1.6">Song downloads (YouTube Audio) are powered by Madrin API for fast MP3 conversion. Video & TikTok downloads use Cobalt. If a link fails, the video may be private, geo-restricted, or the service may be temporarily down. Try again or use a different link.</p>
     </div>
   </div>`;
 },
@@ -1959,14 +1959,19 @@ async function doDownload(){
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({url,mode:tab==='youtube_audio'?'audio':'auto'}),
-      signal:AbortSignal.timeout(20000)
+      signal:AbortSignal.timeout(tab==='youtube_audio'?35000:20000)
     });
     const data=await r.json();
     if(data&&(data.status==='tunnel'||data.status==='stream'||data.status==='redirect')){
+      const songInfo = data.title
+        ? `<div style="font-size:14px;font-weight:700;margin-bottom:4px;color:#e8f4ff">${data.title}</div>
+           <div style="font-size:11px;color:#6688aa;margin-bottom:12px;font-family:'Share Tech Mono',monospace">${data.downloadType==='mp3'?'🎵 MP3':'📁 File'}${data.quality?' · '+data.quality:''}${data.source?' · '+data.source:''}</div>`
+        : '';
       result.innerHTML=`<div style="background:rgba(0,255,204,.04);border:1px solid rgba(0,255,204,.2);border-radius:8px;padding:14px;text-align:center">
         <div style="color:#00cc88;font-weight:700;margin-bottom:12px">✅ Download ready!</div>
+        ${songInfo}
         <a href="${data.url}" target="_blank" download style="text-decoration:none">
-          <button class="btn btn-cyan" style="padding:12px 24px;border-radius:8px;font-size:14px";display:inline-flex;align-items:center;gap:6px">${ico('download',14,'#060b14')} Download File</button>
+          <button class="btn btn-cyan" style="padding:12px 24px;border-radius:8px;font-size:14px;display:inline-flex;align-items:center;gap:6px">${ico('download',14,'#060b14')} Download File</button>
         </a>
       </div>`;
     } else if(data&&data.status==='picker'&&data.picker?.length){
