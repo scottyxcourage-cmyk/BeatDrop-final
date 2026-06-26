@@ -76,23 +76,33 @@ function initDB() {
   // Migrate: add pinned column to existing posts table if missing
   try {
     db.exec('ALTER TABLE posts ADD COLUMN pinned INTEGER DEFAULT 0');
-  } catch(e) { /* already exists */ }
+  } catch (e) {
+    if (!e.message || !e.message.includes('duplicate column')) {
+      console.error('Migration warning (pinned column):', e.message);
+    }
+  }
 
   console.log('✅ SQLite DB ready');
 }
 
 // Wrap sync API to match async interface used in routes
 const dbAsync = {
-  execute: ({ sql, args }) => {
-    const upper = sql.trim().toUpperCase();
-    if (upper.startsWith('SELECT') || upper.startsWith('WITH')) {
-      const stmt = db.prepare(sql);
-      const rows = stmt.all(...(args || []));
-      return Promise.resolve({ rows });
-    } else {
-      const stmt = db.prepare(sql);
-      const info = stmt.run(...(args || []));
-      return Promise.resolve({ rows: [], info });
+  execute: (input) => {
+    try {
+      const sql = typeof input === 'string' ? input : input.sql;
+      const args = typeof input === 'string' ? [] : (input.args || []);
+      const upper = sql.trim().toUpperCase();
+      if (upper.startsWith('SELECT') || upper.startsWith('WITH')) {
+        const stmt = db.prepare(sql);
+        const rows = stmt.all(...args);
+        return Promise.resolve({ rows });
+      } else {
+        const stmt = db.prepare(sql);
+        const info = stmt.run(...args);
+        return Promise.resolve({ rows: [], info });
+      }
+    } catch (err) {
+      return Promise.reject(err);
     }
   }
 };

@@ -37,6 +37,7 @@ router.put('/me', protect, async (req, res) => {
     });
     res.json({ message: 'Profile updated', user: result.rows[0] });
   } catch (err) {
+    console.error('Update profile error:', err.message || err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -66,6 +67,7 @@ router.put('/me/password', protect, async (req, res) => {
     });
     res.json({ message: 'Password changed successfully!' });
   } catch (err) {
+    console.error('Change password error:', err.message || err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -83,6 +85,7 @@ router.get('/wallet', protect, async (req, res) => {
     });
     res.json({ balance: user.rows[0]?.wallet_balance || 0, transactions: txns.rows });
   } catch (err) {
+    console.error('Wallet fetch error:', err.message || err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -109,6 +112,7 @@ router.post('/wallet/spend', protect, async (req, res) => {
     });
     res.json({ message: 'Payment successful', balance: newBalance });
   } catch (err) {
+    console.error('Wallet spend error:', err.message || err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -121,6 +125,7 @@ router.get('/', protect, adminOnly, async (req, res) => {
     );
     res.json(result.rows);
   } catch (err) {
+    console.error('List users error:', err.message || err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -131,6 +136,7 @@ router.delete('/:id', protect, adminOnly, async (req, res) => {
     await db.execute({ sql: 'DELETE FROM users WHERE id = ?', args: [req.params.id] });
     res.json({ message: 'User deleted' });
   } catch (err) {
+    console.error('Delete user error:', err.message || err);
     res.status(500).json({ message: 'Server error' });
   }
 });

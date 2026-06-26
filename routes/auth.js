@@ -93,7 +93,8 @@ const validateEmail = async (email) => {
     if (data.disposable === true) return false;
     if (data.valid === false) return false;
     return true;
-  } catch {
+  } catch (err) {
+    console.warn('Email validation service unreachable, allowing by default:', err.message);
     return true;
   }
 };
@@ -174,6 +175,7 @@ router.post('/verify', async (req, res) => {
       user: { id: u.id, username: u.username, email: u.email, role: u.role }
     });
   } catch (err) {
+    console.error('Verify error:', err.message || err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -203,6 +205,7 @@ router.post('/login', async (req, res) => {
       user: { id: u.id, username: u.username, email: u.email, role: u.role, avatar: u.avatar }
     });
   } catch (err) {
+    console.error('Login error:', err.message || err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -263,6 +266,7 @@ router.post('/reset-password', async (req, res) => {
 
     res.json({ message: 'Password reset successful!' });
   } catch (err) {
+    console.error('Reset-password error:', err.message || err);
     res.status(500).json({ message: 'Server error' });
   }
 });

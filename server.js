@@ -62,6 +62,7 @@ app.get('/api/news', protect, async (req, res) => {
     const result = await db.execute('SELECT * FROM news ORDER BY created_at DESC');
     res.json({ news: result.rows });
   } catch (err) {
+    console.error('News fetch error:', err.message || err);
     res.status(500).json({ message: 'Server error' });
   }
 });

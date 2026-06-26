@@ -33,13 +33,16 @@ router.post('/', async (req, res) => {
       });
       const text = await r.text();
       let data;
-      try { data = JSON.parse(text); } catch { continue; }
+      try { data = JSON.parse(text); } catch (parseErr) {
+        console.warn(`Download instance ${instance}: non-JSON response`);
+        continue;
+      }
       // Accept any non-error response
       if (data && data.status && data.status !== 'error') {
         return res.json(data);
       }
     } catch (e) {
-      // Try next instance
+      console.warn(`Download instance ${instance} failed:`, e.message);
     }
   }
 

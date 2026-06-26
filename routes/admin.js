@@ -16,6 +16,7 @@ router.get('/users', async (req, res) => {
     );
     res.json({ users: result.rows });
   } catch (err) {
+    console.error('Admin list users error:', err.message || err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -26,6 +27,7 @@ router.delete('/users/:id', async (req, res) => {
     await db.execute({ sql: 'DELETE FROM users WHERE id = ?', args: [req.params.id] });
     res.json({ message: 'User deleted' });
   } catch (err) {
+    console.error('Admin delete user error:', err.message || err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -38,6 +40,7 @@ router.put('/users/:id/role', async (req, res) => {
     await db.execute({ sql: 'UPDATE users SET role = ? WHERE id = ?', args: [role, req.params.id] });
     res.json({ message: 'Role updated' });
   } catch (err) {
+    console.error('Admin update role error:', err.message || err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -57,6 +60,7 @@ router.post('/wallet/topup', async (req, res) => {
     });
     res.json({ message: 'Wallet topped up', balance: newBalance });
   } catch (err) {
+    console.error('Admin wallet topup error:', err.message || err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -76,6 +80,7 @@ router.post('/wallet/deduct', async (req, res) => {
     });
     res.json({ message: 'Wallet deducted', balance: newBalance });
   } catch (err) {
+    console.error('Admin wallet deduct error:', err.message || err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -89,6 +94,7 @@ router.get('/news', async (req, res) => {
     );
     res.json({ news: result.rows });
   } catch (err) {
+    console.error('Admin list news error:', err.message || err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -106,6 +112,7 @@ router.post('/news', async (req, res) => {
     const result = await db.execute({ sql: 'SELECT * FROM news WHERE id = ?', args: [id] });
     res.status(201).json({ message: 'News created', news: result.rows[0] });
   } catch (err) {
+    console.error('Admin create news error:', err.message || err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -121,6 +128,7 @@ router.put('/news/:id', async (req, res) => {
     const result = await db.execute({ sql: 'SELECT * FROM news WHERE id = ?', args: [req.params.id] });
     res.json({ message: 'News updated', news: result.rows[0] });
   } catch (err) {
+    console.error('Admin update news error:', err.message || err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -131,6 +139,7 @@ router.delete('/news/:id', async (req, res) => {
     await db.execute({ sql: 'DELETE FROM news WHERE id = ?', args: [req.params.id] });
     res.json({ message: 'News deleted' });
   } catch (err) {
+    console.error('Admin delete news error:', err.message || err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -147,6 +156,7 @@ router.get('/posts', async (req, res) => {
     });
     res.json({ posts: result.rows });
   } catch (err) {
+    console.error('Admin list posts error:', err.message || err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -157,6 +167,7 @@ router.delete('/posts/:id', async (req, res) => {
     await db.execute({ sql: 'DELETE FROM posts WHERE id = ?', args: [req.params.id] });
     res.json({ message: 'Post deleted' });
   } catch (err) {
+    console.error('Admin delete post error:', err.message || err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -173,6 +184,7 @@ router.post('/posts', async (req, res) => {
     });
     res.status(201).json({ message: 'Post created', id });
   } catch (err) {
+    console.error('Admin create post error:', err.message || err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -194,6 +206,7 @@ router.get('/stats', async (req, res) => {
       totalCopsInCirculation: totalCops.rows[0].total
     });
   } catch (err) {
+    console.error('Admin stats error:', err.message || err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -213,6 +226,7 @@ router.post('/announce', async (req, res) => {
     });
     res.status(201).json({ message: 'Announcement posted', id });
   } catch (err) {
+    console.error('Admin announce error:', err.message || err);
     res.status(500).json({ message: 'Server error' });
   }
 });

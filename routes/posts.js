@@ -74,6 +74,7 @@ router.post('/', protect, async (req, res) => {
       liked: false
     });
   } catch (err) {
+    console.error('Create post error:', err.message || err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -102,6 +103,7 @@ router.put('/:id/like', protect, async (req, res) => {
 
     res.json({ likes: count.rows[0].total, liked: existing.rows.length === 0 });
   } catch (err) {
+    console.error('Toggle like error:', err.message || err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -130,6 +132,7 @@ router.post('/:id/comment', protect, async (req, res) => {
 
     res.json(comments.rows);
   } catch (err) {
+    console.error('Add comment error:', err.message || err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -146,6 +149,7 @@ router.delete('/:id', protect, async (req, res) => {
     await db.execute({ sql: 'DELETE FROM posts WHERE id = ?', args: [req.params.id] });
     res.json({ message: 'Post deleted' });
   } catch (err) {
+    console.error('Delete post error:', err.message || err);
     res.status(500).json({ message: 'Server error' });
   }
 });

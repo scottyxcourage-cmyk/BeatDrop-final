@@ -47,12 +47,15 @@ router.get('/:type', async (req, res) => {
   const url  = ENDPOINTS[type] || ENDPOINTS.livescores;
   try {
     const r = await fetch(url, { signal: AbortSignal.timeout(8000) });
-    if (!r.ok) return res.json({ events: [] });
+    if (!r.ok) {
+      console.warn(`Sports API returned ${r.status} for ${type}`);
+      return res.status(r.status).json({ events: [], error: `Sports API error ${r.status}` });
+    }
     const d  = await r.json();
     res.json({ events: normalise(d) });
   } catch (e) {
-    console.error('Sports error:', e.message);
-    res.json({ events: [] });
+    console.error('Sports fetch error:', e.message);
+    res.status(502).json({ events: [], error: 'Sports data temporarily unavailable' });
   }
 });
 
