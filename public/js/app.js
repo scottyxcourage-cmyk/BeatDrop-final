@@ -208,13 +208,41 @@ const App = {
   bindCardActions() {
     // Download buttons
     document.querySelectorAll('.btn-download').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', async (e) => {
+        e.preventDefault();
         try {
           const songData = JSON.parse(btn.dataset.song);
-          Store.addToHistory(songData);
-          Utils.showToast('Download started', 'success');
-        } catch {
-          // Still allow download link to work
+          const videoUrl = songData.url || songData.downloadUrl;
+
+          // If we already have a direct download link (from /api/download), use it
+          if (videoUrl && !videoUrl.includes('youtube.com') && !videoUrl.includes('youtu.be') && videoUrl !== '#') {
+            Store.addToHistory(songData);
+            Utils.showToast('Download started', 'success');
+            window.open(videoUrl, '_blank');
+            return;
+          }
+
+          // Otherwise fetch the audio URL from the backend
+          Utils.showToast('Fetching download link...', 'info');
+          btn.style.pointerEvents = 'none';
+          btn.innerHTML = '<svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4m-7.07-3.93l2.83-2.83m8.48-8.48l2.83-2.83M2 12h4m12 0h4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83"/></svg> Loading...';
+
+          const response = await fetch(`/api/download?url=${encodeURIComponent(videoUrl)}`);
+          const data = await response.json();
+
+          if (data.status === true && data.result && data.result.dl) {
+            songData.downloadUrl = data.result.dl;
+            Store.addToHistory(songData);
+            Utils.showToast('Download started', 'success');
+            window.open(data.result.dl, '_blank');
+          } else {
+            throw new Error('Could not get download link');
+          }
+        } catch (err) {
+          Utils.showToast(err.message || 'Download failed', 'error');
+        } finally {
+          btn.style.pointerEvents = '';
+          btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download';
         }
       });
     });

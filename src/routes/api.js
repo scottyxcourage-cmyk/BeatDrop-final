@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const { searchLimiter } = require('../middleware/rateLimiter');
-const { fetchWithRetry, buildApiUrl } = require('../utils/apiClient');
+const { searchYouTube, getDownloadInfo } = require('../utils/apiClient');
 
 // Health check
 router.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: Date.now() });
 });
 
-// Search/download music
+// Download audio from a YouTube URL
 router.get('/download', searchLimiter, async (req, res, next) => {
   try {
     const { url } = req.query;
@@ -20,19 +20,17 @@ router.get('/download', searchLimiter, async (req, res, next) => {
       });
     }
 
-    const apiUrl = buildApiUrl('/download/ytmp3', { url });
-    const result = await fetchWithRetry(apiUrl);
-
-    res.json(result.data);
+    const result = await getDownloadInfo(url);
+    res.json(result);
   } catch (err) {
     next(err);
   }
 });
 
-// Search music (proxy to avoid CORS issues on client)
+// Search YouTube for music
 router.get('/search', searchLimiter, async (req, res, next) => {
   try {
-    const { q } = req.query;
+    const { q, limit } = req.query;
 
     if (!q) {
       return res.status(400).json({
@@ -41,10 +39,8 @@ router.get('/search', searchLimiter, async (req, res, next) => {
       });
     }
 
-    const apiUrl = buildApiUrl('/download/ytmp3', { url: q });
-    const result = await fetchWithRetry(apiUrl);
-
-    res.json(result.data);
+    const results = await searchYouTube(q, parseInt(limit) || 6);
+    res.json(results);
   } catch (err) {
     next(err);
   }
