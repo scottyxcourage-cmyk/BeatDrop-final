@@ -119,27 +119,19 @@ router.post('/register', async (req, res) => {
 
     const id = uuidv4();
     const hashedPassword = await bcrypt.hash(password, 10);
-    const otp = generateOTP();
-    const otpExpires = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
     await db.execute({
-      sql: `INSERT INTO users (id, username, email, password, otp_code, otp_expires) VALUES (?, ?, ?, ?, ?, ?)`,
-      args: [id, username, email.toLowerCase(), hashedPassword, otp, otpExpires]
+      sql: `INSERT INTO users (id, username, email, password, is_verified) VALUES (?, ?, ?, ?, 1)`,
+      args: [id, username, email.toLowerCase(), hashedPassword]
     });
 
-    let emailSent = true;
-    try {
-      await sendVerification(email, username, otp);
-    } catch (emailErr) {
-      console.error('Email send failed:', emailErr.message);
-      emailSent = false;
-    }
+    await ensureAdmin(email, id);
+    const token = generateToken(id);
 
     res.status(201).json({
-      message: emailSent
-        ? 'Registered! Check your email for the verification code.'
-        : 'Registered! However, verification email could not be sent. Please try resending it from the login page.',
-      userId: id
+      message: 'Registered successfully!',
+      token,
+      user: { id, username, email: email.toLowerCase(), role: 'user', avatar: '' }
     });
   } catch (err) {
     console.error('Register error:', err.message);
