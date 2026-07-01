@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Verify Email • Spider Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+    background:#0b0712;color:#fff;font-family:'Inter',sans-serif;padding:20px}
+  .card{max-width:420px;width:100%;background:#171022;border:1px solid #2c1f42;border-radius:16px;
+    padding:36px 28px;text-align:center}
+  h1{font-family:'Orbitron',sans-serif;font-size:18px;margin:0 0 16px;color:#b388ff}
+  p{color:#c9c3d8;line-height:1.5;font-size:15px}
+  .spinner{width:36px;height:36px;border:3px solid #2c1f42;border-top-color:#b388ff;
+    border-radius:50%;margin:0 auto 18px;animation:spin 0.8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .icon{font-size:40px;margin-bottom:14px}
+  a.btn{display:inline-block;margin-top:18px;background:#7b2ff7;color:#fff;text-decoration:none;
+    padding:12px 26px;border-radius:10px;font-weight:600;font-size:14px}
+  .error{color:#ff7b9c}
+</style>
+</head>
+<body>
+  <div class="card" id="card">
+    <div class="spinner"></div>
+    <h1>Verifying your email...</h1>
+    <p>Hang tight a moment.</p>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const token = params.get('token');
+    const card = document.getElementById('card');
+
+    function render(iconHtml, title, message, isError, showLogin) {
+      card.innerHTML = `
+        <div class="icon">${iconHtml}</div>
+        <h1 style="${isError ? 'color:#ff7b9c' : ''}">${title}</h1>
+        <p class="${isError ? 'error' : ''}">${message}</p>
+        ${showLogin ? '<a class="btn" href="/">Go to Spider Hub</a>' : ''}
+      `;
+    }
+
+    if (!token) {
+      render('⚠️', 'Missing token', 'This verification link is missing its token. Please use the link from your email.', true, false);
+    } else {
+      fetch('/api/auth/verify?token=' + encodeURIComponent(token))
+        .then(r => r.json().then(data => ({ ok: r.ok, data })))
+        .then(({ ok, data }) => {
+          if (ok) {
+            render('✅', 'Email verified!', data.message || 'Your account is now active. You can sign in.', false, true);
+          } else {
+            render('❌', 'Verification failed', data.error || 'That link is invalid or expired.', true, true);
+          }
+        })
+        .catch(() => render('❌', 'Something went wrong', 'Could not reach the server. Please try again later.', true, false));
+    }
+  </script>
+</body>
+</html>
